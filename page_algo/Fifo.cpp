@@ -1,55 +1,86 @@
-// C program for FIFO page replacement algorithm
-#include <stdio.h>
-int main()
-{
-    int incomingStream[] = {4, 1, 2, 4, 5};
-    int pageFaults = 0;
-    int frames = 3;
-    int m, n, s, pages;
+// FIFO
 
-    pages = sizeof(incomingStream)/sizeof(incomingStream[0]);
-
-    printf("Incoming \t Frame 1 \t Frame 2 \t Frame 3");
-    int temp[frames];
-    for(m = 0; m < frames; m++)
-    {
-        temp[m] = -1;
+#include<bits/stdc++.h>
+using namespace std;
+int main(){
+    int n,m,i,j,k,hit=0;
+    cout<<"Enter number of frames\n";
+    cin>>n;
+    cout<<"Enter number of processes\n";
+    cin>>m;
+    vector<int> p(m);
+    vector<int> hi(m);
+    cout<<"Enter processes\n";
+    for(i=0;i<m;i++){
+        cin>>p[i];
     }
-
-    for(m = 0; m < pages; m++)
-    {
-        s = 0;
-
-        for(n = 0; n < frames; n++)
-        {
-            if(incomingStream[m] == temp[n])
-            {
-                s++;
-                pageFaults--;
+    vector<vector<int>> a(n);
+    for(i=0;i<n;i++){
+        a[i]=vector<int>(m,-1);
+    }
+    map <int, int> mp;    
+    for(i=0;i<m;i++){
+        vector<pair<int,int>> c;
+        for(auto q: mp){
+            c.push_back({q.second,q.first});
+        }
+        sort(c.begin(),c.end());
+        bool hasrun=false;
+        for(j=0;j<n;j++){
+            if(a[j][i]==p[i]){
+                hit++;
+                hi[i]=1;
+                mp[p[i]]++;
+                hasrun=true;
+                break;
+            }
+            if(a[j][i]==-1){
+                for(k=i;k<m;k++)
+                    a[j][k]=p[i];
+                mp[p[i]]++;
+                hasrun=true;
+                break;
             }
         }
-        pageFaults++;
-        
-        if((pageFaults <= frames) && (s == 0))
-        {
-            temp[m] = incomingStream[m];
+        if(j==n||hasrun==false){
+            for(j=0;j<n;j++){
+                if(a[j][i]==c[c.size()-1].second){
+                    mp.erase(a[j][i]);
+                    for(k=i;k<m;k++)
+                        a[j][k]=p[i];
+                    mp[p[i]]++;
+                    break;
+                }
+            }
         }
-        else if(s == 0)
-        {
-            temp[(pageFaults - 1) % frames] = incomingStream[m];
-        }
-      
-        printf("\n");
-        printf("%d\t\t\t",incomingStream[m]);
-        for(n = 0; n < frames; n++)
-        {
-            if(temp[n] != -1)
-                printf(" %d\t\t\t", temp[n]);
-            else
-                printf(" - \t\t\t");
+        for(auto q:mp){
+            if(q.first!=p[i]){
+                mp[q.first]++;
+            }
         }
     }
-
-    printf("\nTotal Page Faults:\t%d\n", pageFaults);
+    cout<<"Process ";
+    for(i=0;i<m;i++){
+        cout<<p[i]<<" ";
+    }
+    cout<<'\n';
+    for(i=0;i<n;i++){
+        cout<<"Frame "<<i<<" ";
+        for(j=0;j<m;j++){
+            if(a[i][j]==-1)
+                cout<<"E ";
+                else 
+            cout<<a[i][j]<<" ";
+        }
+        cout<<'\n';
+    }
+    for(i=0;i<m;i++){
+        if(hi[i]==0)
+        cout<<"  ";
+        else
+        cout<<hi[i]<<" ";
+    }
+    cout<<"\n";
+    cout<<"Hit "<<hit<<'\n'<<"Page Fault "<<m-hit<<'\n';
     return 0;
 }
